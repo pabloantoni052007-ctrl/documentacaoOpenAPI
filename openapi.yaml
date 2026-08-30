@@ -1,0 +1,1137 @@
+openapi: 3.0.3
+
+info:
+  title: API de Controle de Estoque de Pastilhas Industriais
+  description: >
+    API REST para gerenciamento do estoque de pastilhas industriais da DDA Usinagem Industrial Ltda.
+    Permite cadastrar pastilhas, fabricantes, fornecedores e usuários, registrar entradas e saídas,
+    consultar estoque atual, controlar estoque mínimo, visualizar alertas e consultar o histórico
+    de movimentações.
+  version: 1.0.0
+  contact:
+    name: Projeto Integrador - SENAI/SC Florianópolis
+
+servers:
+  - url: http://localhost:8080/api
+    description: Ambiente local de desenvolvimento
+
+tags:
+  - name: Autenticação
+    description: Operações relacionadas à autenticação de usuários.
+  - name: Usuários
+    description: Gerenciamento de usuários do sistema.
+  - name: Pastilhas
+    description: Cadastro e consulta das pastilhas industriais.
+  - name: Fabricantes
+    description: Cadastro e consulta de fabricantes.
+  - name: Fornecedores
+    description: Cadastro e consulta de fornecedores.
+  - name: Movimentações
+    description: Registro e consulta de entradas e saídas de estoque.
+  - name: Estoque
+    description: Consulta da situação atual do estoque e alertas.
+
+paths:
+
+  /auth/login:
+    post:
+      security: []
+      tags:
+        - Autenticação
+      summary: Realizar login
+      description: Autentica um usuário por e-mail e senha.
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: usuario@dda.com.br
+              senha: "123456"
+      responses:
+        '200':
+          description: Login realizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: E-mail ou senha inválidos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /usuarios:
+    get:
+      tags:
+        - Usuários
+      summary: Listar usuários
+      operationId: listarUsuarios
+      parameters:
+        - name: ativo
+          in: query
+          required: false
+          description: Filtra usuários por situação.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de usuários retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsuarioResponse'
+
+    post:
+      tags:
+        - Usuários
+      summary: Cadastrar usuário
+      operationId: cadastrarUsuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRequest'
+      responses:
+        '201':
+          description: Usuário cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Já existe um usuário cadastrado com o e-mail informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /usuarios/{id}:
+    get:
+      tags:
+        - Usuários
+      summary: Buscar usuário por ID
+      operationId: buscarUsuarioPorId
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Usuário encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Usuários
+      summary: Atualizar usuário
+      operationId: atualizarUsuario
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRequest'
+      responses:
+        '200':
+          description: Usuário atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Usuários
+      summary: Excluir usuário
+      operationId: excluirUsuario
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Usuário excluído com sucesso.
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /fabricantes:
+    get:
+      tags:
+        - Fabricantes
+      summary: Listar fabricantes
+      operationId: listarFabricantes
+      responses:
+        '200':
+          description: Lista de fabricantes retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FabricanteResponse'
+
+    post:
+      tags:
+        - Fabricantes
+      summary: Cadastrar fabricante
+      operationId: cadastrarFabricante
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FabricanteRequest'
+      responses:
+        '201':
+          description: Fabricante cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FabricanteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /fabricantes/{id}:
+    get:
+      tags:
+        - Fabricantes
+      summary: Buscar fabricante por ID
+      operationId: buscarFabricantePorId
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Fabricante encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FabricanteResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Fabricantes
+      summary: Atualizar fabricante
+      operationId: atualizarFabricante
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FabricanteRequest'
+      responses:
+        '200':
+          description: Fabricante atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FabricanteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Fabricantes
+      summary: Excluir fabricante
+      operationId: excluirFabricante
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Fabricante excluído com sucesso.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Fabricante não pode ser excluído pois está vinculado a uma pastilha.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /fornecedores:
+    get:
+      tags:
+        - Fornecedores
+      summary: Listar fornecedores
+      operationId: listarFornecedores
+      parameters:
+        - name: nome
+          in: query
+          required: false
+          description: Filtra fornecedores pelo nome.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de fornecedores retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FornecedorResponse'
+
+    post:
+      tags:
+        - Fornecedores
+      summary: Cadastrar fornecedor
+      operationId: cadastrarFornecedor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FornecedorRequest'
+      responses:
+        '201':
+          description: Fornecedor cadastrado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FornecedorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /fornecedores/{id}:
+    get:
+      tags:
+        - Fornecedores
+      summary: Buscar fornecedor por ID
+      operationId: buscarFornecedorPorId
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Fornecedor encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FornecedorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Fornecedores
+      summary: Atualizar fornecedor
+      operationId: atualizarFornecedor
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FornecedorRequest'
+      responses:
+        '200':
+          description: Fornecedor atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FornecedorResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Fornecedores
+      summary: Excluir fornecedor
+      operationId: excluirFornecedor
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Fornecedor excluído com sucesso.
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /pastilhas:
+    get:
+      tags:
+        - Pastilhas
+      summary: Listar pastilhas
+      description: Retorna as pastilhas cadastradas, permitindo filtros opcionais.
+      operationId: listarPastilhas
+      parameters:
+        - name: codigo
+          in: query
+          required: false
+          description: Filtra pelo código da pastilha.
+          schema:
+            type: string
+        - name: descricao
+          in: query
+          required: false
+          description: Filtra pela descrição da pastilha.
+          schema:
+            type: string
+        - name: fabricanteId
+          in: query
+          required: false
+          description: Filtra pelo fabricante.
+          schema:
+            type: integer
+            format: int64
+        - name: estoqueCritico
+          in: query
+          required: false
+          description: Quando verdadeiro, retorna apenas itens com estoque igual ou inferior ao mínimo.
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Lista de pastilhas retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PastilhaResponse'
+
+    post:
+      tags:
+        - Pastilhas
+      summary: Cadastrar pastilha
+      operationId: cadastrarPastilha
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PastilhaRequest'
+            example:
+              codigo: CNMG120408
+              descricao: Pastilha de torneamento externo
+              fabricanteId: 1
+              fornecedorId: 1
+              estoqueMinimo: 20
+              unidadeMedida: UNIDADE
+              ativo: true
+      responses:
+        '201':
+          description: Pastilha cadastrada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PastilhaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Já existe uma pastilha com o código informado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /pastilhas/{id}:
+    get:
+      tags:
+        - Pastilhas
+      summary: Buscar pastilha por ID
+      operationId: buscarPastilhaPorId
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Pastilha encontrada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PastilhaResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags:
+        - Pastilhas
+      summary: Atualizar pastilha
+      operationId: atualizarPastilha
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PastilhaRequest'
+      responses:
+        '200':
+          description: Pastilha atualizada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PastilhaResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Pastilhas
+      summary: Excluir pastilha
+      operationId: excluirPastilha
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '204':
+          description: Pastilha excluída com sucesso.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Pastilha não pode ser excluída pois possui movimentações registradas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /movimentacoes:
+    get:
+      tags:
+        - Movimentações
+      summary: Listar movimentações
+      description: Consulta o histórico de entradas e saídas de estoque.
+      operationId: listarMovimentacoes
+      parameters:
+        - name: pastilhaId
+          in: query
+          required: false
+          description: Filtra as movimentações de uma pastilha.
+          schema:
+            type: integer
+            format: int64
+        - name: tipo
+          in: query
+          required: false
+          description: Filtra por tipo de movimentação.
+          schema:
+            $ref: '#/components/schemas/TipoMovimentacao'
+        - name: dataInicial
+          in: query
+          required: false
+          description: Data inicial do período.
+          schema:
+            type: string
+            format: date
+        - name: dataFinal
+          in: query
+          required: false
+          description: Data final do período.
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Histórico retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MovimentacaoResponse'
+
+    post:
+      tags:
+        - Movimentações
+      summary: Registrar movimentação de estoque
+      description: >
+        Registra uma entrada ou saída de estoque e atualiza automaticamente a quantidade disponível
+        da pastilha.
+      operationId: registrarMovimentacao
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovimentacaoRequest'
+            examples:
+              entrada:
+                summary: Entrada de estoque
+                value:
+                  pastilhaId: 1
+                  tipo: ENTRADA
+                  quantidade: 100
+                  observacao: Compra realizada para reposição mensal
+              saida:
+                summary: Saída para produção
+                value:
+                  pastilhaId: 1
+                  tipo: SAIDA
+                  quantidade: 10
+                  observacao: Utilização no setor de usinagem
+      responses:
+        '201':
+          description: Movimentação registrada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovimentacaoResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          description: Não há estoque suficiente para realizar a saída solicitada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+
+  /estoque:
+    get:
+      tags:
+        - Estoque
+      summary: Consultar estoque atual
+      description: Retorna a posição atual de estoque das pastilhas cadastradas.
+      operationId: consultarEstoque
+      parameters:
+        - name: apenasAtivos
+          in: query
+          required: false
+          description: Define se devem ser retornadas somente pastilhas ativas.
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Situação do estoque retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EstoqueResponse'
+
+  /estoque/alertas:
+    get:
+      tags:
+        - Estoque
+      summary: Listar alertas de estoque mínimo
+      description: Retorna os itens cuja quantidade disponível está igual ou abaixo do estoque mínimo.
+      operationId: listarAlertasEstoque
+      responses:
+        '200':
+          description: Alertas retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AlertaEstoqueResponse'
+
+  /estoque/resumo:
+    get:
+      tags:
+        - Estoque
+      summary: Consultar resumo do estoque
+      description: Retorna indicadores gerais para utilização em painel ou dashboard.
+      operationId: consultarResumoEstoque
+      responses:
+        '200':
+          description: Resumo retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResumoEstoqueResponse'
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      description: Identificador único do recurso.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+
+  responses:
+    BadRequest:
+      description: Requisição inválida ou campos com erro de validação.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            timestamp: "2026-08-24T21:30:00"
+            status: 400
+            erro: Bad Request
+            mensagem: Existem campos inválidos na requisição.
+            campos:
+              codigo: O código é obrigatório.
+
+    NotFound:
+      description: Recurso não encontrado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            timestamp: "2026-08-24T21:30:00"
+            status: 404
+            erro: Not Found
+            mensagem: Recurso não encontrado.
+
+  schemas:
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 150
+          example: usuario@dda.com.br
+        senha:
+          type: string
+          minLength: 6
+          maxLength: 100
+          example: "123456"
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token de autenticação utilizado nas requisições protegidas.
+          example: eyJhbGciOiJIUzI1NiJ9.exemplo.token
+        tipo:
+          type: string
+          example: Bearer
+        usuario:
+          $ref: '#/components/schemas/UsuarioResponse'
+
+    UsuarioRequest:
+      type: object
+      required:
+        - nome
+        - email
+        - senha
+        - perfil
+      properties:
+        nome:
+          type: string
+          minLength: 3
+          maxLength: 120
+          example: João da Silva
+        email:
+          type: string
+          format: email
+          maxLength: 150
+          example: joao.silva@dda.com.br
+        senha:
+          type: string
+          minLength: 6
+          maxLength: 100
+          example: "123456"
+        perfil:
+          $ref: '#/components/schemas/PerfilUsuario'
+        ativo:
+          type: boolean
+          default: true
+          example: true
+
+    UsuarioResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nome:
+          type: string
+          example: João da Silva
+        email:
+          type: string
+          format: email
+          example: joao.silva@dda.com.br
+        perfil:
+          $ref: '#/components/schemas/PerfilUsuario'
+        ativo:
+          type: boolean
+          example: true
+
+    PerfilUsuario:
+      type: string
+      enum:
+        - ADMIN
+        - ESTOQUE
+        - CONSULTA
+      example: ESTOQUE
+
+    FabricanteRequest:
+      type: object
+      required:
+        - nome
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 120
+          example: Sandvik Coromant
+        descricao:
+          type: string
+          maxLength: 255
+          example: Fabricante de ferramentas para usinagem.
+
+    FabricanteResponse:
+      allOf:
+        - $ref: '#/components/schemas/FabricanteRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+
+    FornecedorRequest:
+      type: object
+      required:
+        - nome
+      properties:
+        nome:
+          type: string
+          minLength: 2
+          maxLength: 150
+          example: Ferramentas Industriais SC Ltda.
+        cnpj:
+          type: string
+          pattern: '^\d{14}$'
+          example: "12345678000199"
+          description: CNPJ contendo somente números.
+        email:
+          type: string
+          format: email
+          maxLength: 150
+          example: contato@fornecedor.com.br
+        telefone:
+          type: string
+          minLength: 10
+          maxLength: 15
+          example: "49999998888"
+
+    FornecedorResponse:
+      allOf:
+        - $ref: '#/components/schemas/FornecedorRequest'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+              example: 1
+
+    PastilhaRequest:
+      type: object
+      required:
+        - codigo
+        - descricao
+        - fabricanteId
+        - estoqueMinimo
+        - unidadeMedida
+      properties:
+        codigo:
+          type: string
+          minLength: 2
+          maxLength: 60
+          example: CNMG120408
+        descricao:
+          type: string
+          minLength: 3
+          maxLength: 255
+          example: Pastilha de torneamento externo para aço
+        fabricanteId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+        fornecedorId:
+          type: integer
+          format: int64
+          minimum: 1
+          nullable: true
+          example: 1
+        estoqueMinimo:
+          type: integer
+          minimum: 0
+          example: 20
+        unidadeMedida:
+          $ref: '#/components/schemas/UnidadeMedida'
+        ativo:
+          type: boolean
+          default: true
+          example: true
+
+    PastilhaResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        codigo:
+          type: string
+          example: CNMG120408
+        descricao:
+          type: string
+          example: Pastilha de torneamento externo para aço
+        fabricante:
+          $ref: '#/components/schemas/FabricanteResponse'
+        fornecedor:
+          allOf:
+            - $ref: '#/components/schemas/FornecedorResponse'
+          nullable: true
+        estoqueMinimo:
+          type: integer
+          example: 20
+        quantidadeAtual:
+          type: integer
+          minimum: 0
+          example: 75
+        unidadeMedida:
+          $ref: '#/components/schemas/UnidadeMedida'
+        estoqueCritico:
+          type: boolean
+          example: false
+        ativo:
+          type: boolean
+          example: true
+
+    UnidadeMedida:
+      type: string
+      enum:
+        - UNIDADE
+        - CAIXA
+        - KIT
+      example: UNIDADE
+
+    MovimentacaoRequest:
+      type: object
+      required:
+        - pastilhaId
+        - tipo
+        - quantidade
+      properties:
+        pastilhaId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+        tipo:
+          $ref: '#/components/schemas/TipoMovimentacao'
+        quantidade:
+          type: integer
+          minimum: 1
+          example: 10
+        observacao:
+          type: string
+          maxLength: 500
+          example: Utilização na produção do lote 1025
+
+    MovimentacaoResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1001
+        pastilha:
+          $ref: '#/components/schemas/PastilhaResumo'
+        tipo:
+          $ref: '#/components/schemas/TipoMovimentacao'
+        quantidade:
+          type: integer
+          example: 10
+        quantidadeAnterior:
+          type: integer
+          example: 85
+        quantidadePosterior:
+          type: integer
+          example: 75
+        observacao:
+          type: string
+          nullable: true
+          example: Utilização na produção do lote 1025
+        dataHora:
+          type: string
+          format: date-time
+          example: "2026-08-24T18:20:00-03:00"
+        usuario:
+          $ref: '#/components/schemas/UsuarioResumo'
+
+    TipoMovimentacao:
+      type: string
+      enum:
+        - ENTRADA
+        - SAIDA
+      example: SAIDA
+
+    PastilhaResumo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        codigo:
+          type: string
+          example: CNMG120408
+        descricao:
+          type: string
+          example: Pastilha de torneamento externo para aço
+
+    UsuarioResumo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nome:
+          type: string
+          example: João da Silva
+
+    EstoqueResponse:
+      type: object
+      properties:
+        pastilhaId:
+          type: integer
+          format: int64
+          example: 1
+        codigo:
+          type: string
+          example: CNMG120408
+        descricao:
+          type: string
+          example: Pastilha de torneamento externo para aço
+        quantidadeAtual:
+          type: integer
+          minimum: 0
+          example: 75
+        estoqueMinimo:
+          type: integer
+          minimum: 0
+          example: 20
+        unidadeMedida:
+          $ref: '#/components/schemas/UnidadeMedida'
+        situacao:
+          $ref: '#/components/schemas/SituacaoEstoque'
+
+    AlertaEstoqueResponse:
+      type: object
+      properties:
+        pastilhaId:
+          type: integer
+          format: int64
+          example: 2
+        codigo:
+          type: string
+          example: WNMG080408
+        descricao:
+          type: string
+          example: Pastilha para torneamento
+        quantidadeAtual:
+          type: integer
+          example: 8
+        estoqueMinimo:
+          type: integer
+          example: 10
+        deficit:
+          type: integer
+          description: Quantidade sugerida para atingir pelo menos o estoque mínimo.
+          example: 2
+        situacao:
+          $ref: '#/components/schemas/SituacaoEstoque'
+
+    ResumoEstoqueResponse:
+      type: object
+      properties:
+        totalTiposPastilha:
+          type: integer
+          example: 35
+        totalUnidadesEstoque:
+          type: integer
+          example: 1250
+        itensEmEstoqueCritico:
+          type: integer
+          example: 6
+        itensSemEstoque:
+          type: integer
+          example: 2
+        totalEntradasMes:
+          type: integer
+          example: 450
+        totalSaidasMes:
+          type: integer
+          example: 390
+
+    SituacaoEstoque:
+      type: string
+      enum:
+        - NORMAL
+        - CRITICO
+        - SEM_ESTOQUE
+      example: NORMAL
+
+    ErroResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-08-24T21:30:00-03:00"
+        status:
+          type: integer
+          example: 400
+        erro:
+          type: string
+          example: Bad Request
+        mensagem:
+          type: string
+          example: Existem campos inválidos na requisição.
+        campos:
+          type: object
+          additionalProperties:
+            type: string
+          nullable: true
+          example:
+            codigo: O código é obrigatório.
+
+security:
+  - bearerAuth: []
